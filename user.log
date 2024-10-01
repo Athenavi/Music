@@ -1,0 +1,6 @@
+2024-10-01 23:41:29,118 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:10086
+2024-10-01 23:41:29,118 - INFO - [33mPress CTRL+C to quit[0m
+2024-10-01 23:41:29,121 - INFO -  * Restarting with stat
+2024-10-01 23:41:29,987 - WARNING -  * Debugger is active!
+2024-10-01 23:41:29,991 - INFO -  * Debugger PIN: 341-075-883
