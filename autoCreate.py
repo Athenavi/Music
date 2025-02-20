@@ -8,7 +8,6 @@ from datetime import datetime
 db = get_database_connection()
 cursor = db.cursor()
 
-
 def add_song_to_database(file_path):
     # 从文件名中提取歌手和歌曲名
     file_name = os.path.basename(file_path)
@@ -33,7 +32,6 @@ def add_song_to_database(file_path):
                 print("日期格式错误，请按照 YYYY-MM-DD 的格式输入日期。")
                 release_date = input(f"请输入歌曲 {title} 的发布日期（YYYY-MM-DD，直接回车使用默认日期 1980-01-01）：")
 
-    file_path = file_path
     cover_image_path = input(f"请输入歌曲 {title} 的封面图片路径：")
     lyrics = input(f"请输入歌曲 {title} 的歌词：")
     language = input(f"请输入歌曲 {title} 的语言（直接回车使用默认语言 '国语'）：")
@@ -65,7 +63,6 @@ def add_song_to_database(file_path):
 
     db.commit()
 
-
 def scan_folder(folder_path):
     for root, dirs, files in os.walk(folder_path):
         for file in files:
@@ -73,9 +70,17 @@ def scan_folder(folder_path):
                 file_path = os.path.join(root, file)
                 add_song_to_database(file_path)
 
+def get_folder_path():
+    if os.name == 'nt':  # Windows
+        prompt = "请输入文件夹地址（例如：D:\\sample\\floder）："
+    else:  # Linux 或其他系统
+        prompt = "请输入文件夹地址（例如：/sample/floder）："
 
-# 包含歌曲的文件夹路径
-folder_path = 'D:\\wyy_hot_20240708'
+    folder_path = input(prompt)
+    return folder_path
+
+# 获取用户输入的文件夹路径
+folder_path = get_folder_path()
 scan_folder(folder_path)
 
 # 关闭数据库连接
