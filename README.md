@@ -44,6 +44,9 @@ $ python main.py
 前台服务:
 1. 确保你的系统已经安装了并配置了 node 环境 
 2. 进入 项目根目录/web ，配置 *config.js* 以供程序连接到后台服务
+```bash
+$ cd ./web
+```
 3. 在终端中执行以下命令的顺序执行以启动 zyMusic 前台程序
 
 ```bash

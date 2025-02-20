@@ -687,21 +687,31 @@ def file(id):
 
 
 def play_music_data_from_api(song_id, local_file_path):
-    """从API获取音乐数据"""
-    url = f"http://music.163.com/song/media/outer/url?id={song_id}"
+    """从API获取音乐数据并保存到本地"""
+    byfuns_url = f"https://www.byfuns.top/api/1/?id={song_id}"
 
     try:
-        # 从API获取音乐数据
-        music_response = requests.get(url)
-        if music_response.status_code == 200:
-            # 将音乐文件保存到指定位置
-            with open(local_file_path, 'wb') as f:
-                f.write(music_response.content)
-            # 返回下载的文件
-            return send_file(local_file_path, mimetype="audio/mp3")
+        # 从API获取音乐的直链
+        response = requests.get(byfuns_url)
+
+        if response.status_code == 200:
+            music_url = response.text.strip()  # 假设API返回的是直接的音乐链接
+
+            # 从音乐链接下载音乐数据
+            music_response = requests.get(music_url)
+            if music_response.status_code == 200:
+                # 将音乐文件保存到指定位置
+                with open(local_file_path, 'wb') as f:
+                    f.write(music_response.content)
+                # 返回下载的文件
+                return send_file(local_file_path, mimetype="audio/mp3")
+            else:
+                print(f"Failed to download the music file from {music_url}. Status Code: {music_response.status_code}")
+                return jsonify({"error": "无法下载音乐文件"}), 500  # 返回500错误，明确告知下载失败
         else:
-            print(f"Failed to download the music file from {url}. Status Code: {music_response.status_code}")
-            return jsonify({"error": "无法下载音乐文件"}), 500  # 返回500错误，明确告知下载失败
+            print(f"Failed to get music URL from API. Status Code: {response.status_code}")
+            return jsonify({"error": "无法获取音乐链接"}), 500  # 返回500错误
+
     except Exception as e:
         print(f"An error occurred: {e}")
         return jsonify({"error": "发生错误"}), 500
@@ -763,6 +773,7 @@ def cover_file(id):
 
 def get_song_info(song_id):
     cache_file_path = f'temp/info_{song_id}.json'
+
     # 检查缓存文件是否存在以及是否有效（有效期为三天）
     if os.path.exists(cache_file_path):
         file_mod_time = os.path.getmtime(cache_file_path)
@@ -771,22 +782,23 @@ def get_song_info(song_id):
                 return json.load(f)
 
     # 如果缓存不存在或已过期，发送请求获取数据
-    url = "https://tenapi.cn/v2/songinfo"
-    data = {'id': song_id}
+    url = f"https://api.paugram.com/netease/?id={song_id}"
 
     try:
-        response = requests.post(url, data=data)
+        response = requests.get(url)
         response_json = response.json()
 
-        if response_json['code'] == 200:
-            song_info = response_json['data']
+        if 'id' in response_json:  # 检查返回的 JSON 是否包含 id
+            song_info = response_json
             result = {
                 'id': song_info['id'],
-                'title': song_info['songs'],
-                'artist': song_info['sings'],
+                'title': song_info['title'],
+                'artist': song_info['artist'],
                 'album': song_info['album'],
                 'cover': song_info['cover'],
-                'url': song_info['url']
+                'url': song_info['link'],
+                'lyric': song_info.get('lyric', ''),  # 使用 get 方法以防缺少字段
+                'sub_lyric': song_info.get('sub_lyric', '')
             }
 
             # 将数据写入缓存文件
@@ -796,7 +808,7 @@ def get_song_info(song_id):
 
             return result
         else:
-            return {'error': response_json['msg']}
+            return {'error': response_json.get('msg', '未知错误')}
 
     except Exception as e:
         return {'error': str(e)}
