@@ -2,7 +2,7 @@ import mysql.connector
 import configparser
 
 
-def get_database_connection():
+def get_db_connection():
     config = configparser.ConfigParser()
     try:
         config.read('config.ini', encoding='utf-8')
@@ -23,9 +23,12 @@ def get_database_connection():
 
 def test_database_connection():
     try:
-        db = get_database_connection()
+        db = get_db_connection()
         db.close()
         print("Database connection is successful.")
     except mysql.connector.Error as err:
         print(f"Failed to connect to the database: {err}")
 
+
+if __name__ == '__main__':
+    test_database_connection()

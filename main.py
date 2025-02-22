@@ -1,4 +1,3 @@
-import asyncio
 import json
 import logging
 import os
@@ -21,7 +20,7 @@ from flask_jwt_extended import (
 from mutagen.id3 import ID3, APIC
 from mutagen.mp3 import MP3
 
-from database import test_database_connection, get_database_connection
+from database import test_database_connection, get_db_connection
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -66,7 +65,7 @@ def login():
     if username is None or password is None:
         return jsonify({"msg": "Missing username or password"}), 400
 
-    db = get_database_connection()
+    db = get_db_connection()
     cursor = db.cursor()
 
     try:
@@ -254,7 +253,7 @@ def login_status():
 @app.route('/api/Recommend', methods=['GET'])
 def api_Recommend():
     pageType = request.args.get('pageType')
-    db = get_database_connection()
+    db = get_db_connection()
     cursor = db.cursor()
 
     # 定义一个函数来执行查询并返回结果
@@ -336,7 +335,7 @@ def api_singer():
 
 def get_all_singer():
     try:
-        db = get_database_connection()
+        db = get_db_connection()
         cursor = db.cursor()
         query = "SELECT DISTINCT artists.ArtistID, artists.Name FROM songs INNER JOIN artists ON songs.ArtistID = artists.ArtistID;"
         cursor.execute(query)
@@ -356,7 +355,7 @@ def get_all_singer():
 def singer_detail(uid):
     if uid:
         try:
-            db = get_database_connection()
+            db = get_db_connection()
             cursor = db.cursor()
             query = "SELECT songs.SongID, songs.Title, artists.Name FROM songs INNER JOIN artists ON songs.ArtistID = artists.ArtistID WHERE artists.ArtistID = {};".format(
                 uid)
@@ -393,7 +392,7 @@ def api_PlayListDetail(pid=0):
 def album_detail(pid):
     if pid:
         try:
-            db = get_database_connection()
+            db = get_db_connection()
             cursor = db.cursor()
             query = "SELECT songs.SongID, songs.Title, artists.Name FROM songs INNER JOIN artists ON songs.ArtistID = artists.ArtistID WHERE songs.AlbumID = {};".format(
                 pid)
@@ -417,7 +416,7 @@ def album_detail(pid):
 def list_by_uid(uid, list_id):
     if uid and list_id:
         try:
-            db = get_database_connection()
+            db = get_db_connection()
             cursor = db.cursor()
             query = "SELECT * FROM `playlists` WHERE UserID={} and PlaylistID={};".format(uid, list_id)
             print(query)
@@ -441,7 +440,7 @@ def list_by_uid(uid, list_id):
 
 @app.route('/api/toplist', methods=['GET'])
 def api_topLists():
-    db = get_database_connection()
+    db = get_db_connection()
     cursor = db.cursor()
     try:
         cursor.execute("SELECT TargetID FROM `hot` WHERE Type='SONG';")
@@ -462,7 +461,7 @@ def api_topLists():
 
 @app.route('/api/album', methods=['GET'])
 def api_album():
-    db = get_database_connection()
+    db = get_db_connection()
     cursor = db.cursor()
     try:
         cursor.execute("SELECT AlbumID,Title,ReleaseDate FROM albums;")
@@ -491,7 +490,7 @@ def get_playlistInformation(pid=0):
     pid = request.args.get('pid')
     if pid:
         try:
-            db = get_database_connection()
+            db = get_db_connection()
             cursor = db.cursor()
             query = "SELECT * FROM `playlists` WHERE PlaylistID={};".format(pid)
             print(query)
@@ -674,7 +673,7 @@ def file(id):
         return send_file(music_file_path, mimetype="audio/mp3")
 
     # 从数据库查找音乐文件路径
-    db = get_database_connection()  # 获取连接
+    db = get_db_connection()  # 获取连接
     music_file_path_from_db = fetch_song_from_db(db, id)
 
     # 检查数据库返回的文件路径
@@ -825,7 +824,7 @@ def get_cover_from_file(id, covers_dir):
         return cover_file_path
 
     # 获取数据库连接
-    db = get_database_connection()
+    db = get_db_connection()
     cursor = db.cursor()
     query = "SELECT FilePath FROM songs WHERE SongID = %s;"
 
@@ -860,7 +859,7 @@ def get_cover_from_file(id, covers_dir):
 
 @asynccontextmanager
 async def async_db_connection():
-    db = get_database_connection()
+    db = get_db_connection()
     try:
         yield db
     finally:
@@ -868,10 +867,10 @@ async def async_db_connection():
 
 
 @app.route('/api/lrc/<int:song_id>')
-async def get_lrc(song_id):
+def get_lrc(song_id):
     if song_id:
         try:
-            async with async_db_connection() as db:
+            with get_db_connection() as db:  # 假设你有一个同步的数据库连接函数 db_connection
                 cursor = db.cursor()
                 query = "SELECT Lyrics FROM songs WHERE SongID = %s;"
                 cursor.execute(query, (song_id,))
@@ -884,41 +883,16 @@ async def get_lrc(song_id):
                     response.headers.set('Content-Type', 'text/plain')
                     return response
 
-                cursor.close()
-                cursor = db.cursor()
-                query = "SELECT artists.Name, songs.Title FROM songs JOIN artists ON songs.ArtistID = artists.ArtistID WHERE SongID = %s;"
-                cursor.execute(query, (song_id,))
-                song_info = cursor.fetchone()
+                else:
+                    tmp_file_dir = os.path.join(base_dir, 'temp', f'info_{song_id}.json')
+                    with open(tmp_file_dir, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                        lrc_content = data['lyric']
 
-                if song_info:
-                    artist = song_info[0]
-                    title = song_info[1]
-                    lrc_filename = f"{base_dir}/lrc/{artist} - {title}.lrc"
-
-                    if os.path.exists(lrc_filename):
-                        print(f"Reading lyrics from file: {lrc_filename}")
-                        with open(lrc_filename, 'r', encoding='utf-8') as file:
-                            lyrics = file.read()
-
-                        # 异步写入数据库
-                        await asyncio.to_thread(write_lyrics_to_db, lyrics, song_id)
-
-                        response = make_response(lyrics)
-                        response.headers.set('Content-Disposition', 'attachment', filename=f"{song_id}.lrc")
-                        response.headers.set('Content-Type', 'text/plain')
-                        return response
-                    else:
-                        tmp_file_dir = os.path.join(base_dir, 'temp', f'info_{song_id}.json')
-                        with open(tmp_file_dir, 'r', encoding='utf-8') as f:
-                            data = json.load(f)
-                            lrc_content = data['lyric']
-
-                        response = make_response(lrc_content)
-                        response.headers.set('Content-Disposition', 'attachment', filename=f"{song_id}.lrc")
-                        response.headers.set('Content-Type', 'text/plain')
-                        return response
-
-                return make_response("Lyrics not found.", 404)
+                    response = make_response(lrc_content)
+                    response.headers.set('Content-Disposition', 'attachment', filename=f"{song_id}.lrc")
+                    response.headers.set('Content-Type', 'text/plain')
+                    return response
 
         except Exception as e:
             print(f"Error: {e}")
@@ -926,17 +900,14 @@ async def get_lrc(song_id):
 
 
 def write_lyrics_to_db(lyrics, song_id):
-    db = get_database_connection()
+    db = get_db_connection()
     cursor = db.cursor()
     update_query = "UPDATE songs SET Lyrics = %s WHERE SongID = %s;"
     cursor.execute(update_query, (lyrics, song_id))
     db.commit()
     cursor.close()
     db.close()
-
     return True
-
-    return make_response("Invalid song ID.", 400)
 
 
 @app.route('/api/sidebar/')
@@ -958,7 +929,7 @@ def get_sidebar():
 
 def song_name_list(ids):
     if ids:
-        db = get_database_connection()
+        db = get_db_connection()
         cursor = db.cursor()
         try:
             print(ids)
@@ -984,7 +955,7 @@ def song_name(id=0, pid=0, uid=0):
         song_data = song_name_list(id)
         return jsonify(song_data)
     if pid:
-        db = get_database_connection()
+        db = get_db_connection()
         cursor = db.cursor()
         try:
             query = "SELECT SongID FROM `playlist_songs` WHERE PlayListID = {}".format(
@@ -1005,7 +976,7 @@ def song_name(id=0, pid=0, uid=0):
             cursor.close()
             db.close()
     if uid and not pid and not id:
-        db = get_database_connection()
+        db = get_db_connection()
         cursor = db.cursor()
         try:
             query = "SELECT songs.SongID, songs.Title, artists.Name FROM songs JOIN artists ON songs.ArtistID = artists.ArtistID WHERE songs.ArtistID = {};".format(
