@@ -2,30 +2,28 @@ create table artists
 (
     ArtistID   int auto_increment
         primary key,
-    Name       varchar(255)                       not null,
-    Bio        text                               null,
-    DebutDate  date                               null,
-    Country    varchar(255)                       null,
-    CreateTime datetime default CURRENT_TIMESTAMP null,
-    UpdateTime datetime default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP
-)
-    engine = InnoDB;
+    Name       varchar(255) null comment '艺术家姓名',
+    Bio        text         null comment '艺术家简介',
+    DebutDate  date         null comment '出道日期',
+    Country    varchar(255) null comment '国家',
+    CreateTime datetime     null comment '创建时间',
+    UpdateTime datetime     null comment '更新时间'
+);
 
 create table albums
 (
     AlbumID        int auto_increment
         primary key,
-    Title          varchar(255)                       not null,
-    ArtistID       int                                null,
-    ReleaseDate    date                               null,
-    Genre          varchar(100)                       null,
-    CoverImagePath varchar(255)                       null,
-    CreateTime     datetime default CURRENT_TIMESTAMP null,
-    UpdateTime     datetime default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP,
+    Title          varchar(255) null comment '专辑标题',
+    ArtistID       int          null comment '艺术家ID',
+    ReleaseDate    date         null comment '发行日期',
+    Genre          varchar(100) null comment '音乐类型',
+    CoverImagePath varchar(255) null comment '封面图片路径',
+    CreateTime     datetime     null comment '创建时间',
+    UpdateTime     datetime     null comment '更新时间',
     constraint albums_ibfk_1
         foreign key (ArtistID) references artists (ArtistID)
-)
-    engine = InnoDB;
+);
 
 create index ArtistID
     on albums (ArtistID);
@@ -34,48 +32,56 @@ create table hot
 (
     HotID      int auto_increment
         primary key,
-    TargetID   int                                          not null,
-    Type       enum ('SONG', 'ARTIST', 'ALBUM', 'PLAYLIST') not null,
-    Position   int       default 0                          null,
-    UpdateTime timestamp default CURRENT_TIMESTAMP          null on update CURRENT_TIMESTAMP,
+    TargetID   int                                          null comment '目标ID',
+    Type       enum ('SONG', 'ARTIST', 'ALBUM', 'PLAYLIST') null comment '类型',
+    Position   int                                          null comment '位置',
+    UpdateTime timestamp                                    null comment '更新时间',
     constraint unique_target_type
         unique (TargetID, Type)
-)
-    engine = InnoDB;
+);
 
 create table musictags
 (
     TagID   int auto_increment
         primary key,
-    TagName varchar(255) not null,
+    TagName varchar(255) null comment '标签名称',
     constraint TagName
         unique (TagName)
-)
-    engine = InnoDB;
+);
 
 create table songs
 (
     SongID         int auto_increment
         primary key,
-    Title          varchar(255)                       not null,
-    ArtistID       int                                null,
-    AlbumID        int                                null,
-    Genre          varchar(100)                       null,
-    Duration       int                                null comment 'Duration in seconds',
-    ReleaseDate    date                               null,
-    FilePath       varchar(255)                       null comment 'Path to where the song file is stored',
-    CoverImagePath varchar(255)                       null,
-    Lyrics         text                               null,
-    Language       varchar(50)                        null,
-    PlayCount      int      default 0                 null,
-    CreateTime     datetime default CURRENT_TIMESTAMP null,
-    UpdateTime     datetime default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP,
+    Title          varchar(255) null comment '歌曲标题',
+    ArtistID       int          null comment '艺术家ID',
+    AlbumID        int          null comment '专辑ID',
+    Genre          varchar(100) null comment '音乐类型',
+    Duration       int          null comment '时长（秒）',
+    ReleaseDate    date         null comment '发行日期',
+    FilePath       varchar(255) null comment '歌曲文件存储路径',
+    CoverImagePath varchar(255) null comment '封面图片路径',
+    Lyrics         text         null comment '歌词',
+    Language       varchar(50)  null comment '语言',
+    PlayCount      int          null comment '播放次数',
+    CreateTime     datetime     null comment '创建时间',
+    UpdateTime     datetime     null comment '更新时间',
+    AlbumArtist    varchar(255) null comment '专辑艺术家',
+    Year           year         null comment '年份',
+    TrackNumber    int          null comment '曲目编号',
+    DiscNumber     int          null comment '唱片编号',
+    Composer       varchar(255) null comment '作曲家',
+    Lyricist       varchar(255) null comment '作词人',
+    Comments       text         null comment '评论',
+    BitDepth       int          null comment '位深',
+    Channels       int          null comment '声道数',
+    SampleRate     int          null comment '采样率',
+    Bitrate        int          null comment '比特率',
     constraint songs_ibfk_1
         foreign key (ArtistID) references artists (ArtistID),
     constraint songs_ibfk_2
         foreign key (AlbumID) references albums (AlbumID)
-)
-    engine = InnoDB;
+);
 
 create index AlbumID
     on songs (AlbumID);
@@ -88,8 +94,8 @@ create index idx_title
 
 create table songtags
 (
-    SongID int not null,
-    TagID  int not null,
+    SongID int not null comment '歌曲ID',
+    TagID  int not null comment '标签ID',
     primary key (SongID, TagID),
     constraint songtags_ibfk_1
         foreign key (SongID) references songs (SongID)
@@ -97,8 +103,7 @@ create table songtags
     constraint songtags_ibfk_2
         foreign key (TagID) references musictags (TagID)
             on delete cascade
-)
-    engine = InnoDB;
+);
 
 create index TagID
     on songtags (TagID);
@@ -107,49 +112,47 @@ create table users
 (
     UserID                        int auto_increment
         primary key,
-    Username                      varchar(255)                                               not null,
-    Password                      varchar(255)                                               not null,
-    Email                         varchar(255)                                               not null,
-    Mobile                        varchar(20)                                                null,
-    CreatedTime                   timestamp                        default CURRENT_TIMESTAMP null,
-    UpdatedTime                   timestamp                        default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP,
-    LastLoginTime                 timestamp                                                  null,
-    Status                        tinyint                          default 1                 null,
-    Role                          varchar(50)                                                null,
-    Nickname                      varchar(255)                                               null,
-    Avatar                        varchar(255)                                               null,
-    Gender                        enum ('Male', 'Female', 'Other') default 'Other'           null,
-    Birthday                      date                                                       null,
-    Country                       varchar(255)                                               null,
-    City                          varchar(255)                                               null,
-    Bio                           text                                                       null,
-    TwoFactorAuthenticationStatus tinyint                          default 0                 null,
+    Username                      varchar(255)                     null comment '用户名',
+    Password                      varchar(255)                     null comment '密码',
+    Email                         varchar(255)                     null comment '邮箱',
+    Mobile                        varchar(20)                      null comment '手机',
+    CreatedTime                   timestamp                        null comment '创建时间',
+    UpdatedTime                   timestamp                        null comment '更新时间',
+    LastLoginTime                 timestamp                        null comment '最后登录时间',
+    Status                        tinyint                          null comment '状态',
+    Role                          varchar(50)                      null comment '角色',
+    Nickname                      varchar(255)                     null comment '昵称',
+    Avatar                        varchar(255)                     null comment '头像',
+    Gender                        enum ('Male', 'Female', 'Other') null comment '性别',
+    Birthday                      date                             null comment '生日',
+    Country                       varchar(255)                     null comment '国家',
+    City                          varchar(255)                     null comment '城市',
+    Bio                           text                             null comment '个人简介',
+    TwoFactorAuthenticationStatus tinyint                          null comment '双因素认证状态',
     constraint Email
         unique (Email),
     constraint Mobile
         unique (Mobile)
-)
-    engine = InnoDB;
+);
 
 create table comments
 (
     CommentID       int auto_increment
         primary key,
-    SongID          int                                null,
-    UserID          int                                null,
-    ParentCommentID int                                null,
-    Content         text                               null,
-    ImageURL        varchar(255)                       null,
-    LikesCount      int      default 0                 null,
-    MentionedUsers  text                               null comment '@功能，存储被提及用户的UserID，逗号分隔',
-    CreateTime      datetime default CURRENT_TIMESTAMP null,
-    UpdateTime      datetime default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP,
+    SongID          int          null comment '歌曲ID',
+    UserID          int          null comment '用户ID',
+    ParentCommentID int          null comment '父评论ID',
+    Content         text         null comment '评论内容',
+    ImageURL        varchar(255) null comment '图片URL',
+    LikesCount      int          null comment '点赞数',
+    MentionedUsers  text         null comment '被提及用户的ID',
+    CreateTime      datetime     null comment '创建时间',
+    UpdateTime      datetime     null comment '更新时间',
     constraint comments_ibfk_1
         foreign key (SongID) references songs (SongID),
     constraint comments_ibfk_2
         foreign key (UserID) references users (UserID)
-)
-    engine = InnoDB;
+);
 
 create index SongID
     on comments (SongID);
@@ -161,34 +164,32 @@ create table follows
 (
     FollowID   int auto_increment
         primary key,
-    UserID     int                                          not null,
-    TargetID   int                                          not null,
-    Type       enum ('USER', 'ARTIST', 'ALBUM', 'PLAYLIST') not null,
-    CreateTime timestamp default CURRENT_TIMESTAMP          null,
+    UserID     int                                          null comment '用户ID',
+    TargetID   int                                          null comment '目标ID',
+    Type       enum ('USER', 'ARTIST', 'ALBUM', 'PLAYLIST') null comment '类型',
+    CreateTime timestamp                                    null comment '创建时间',
     constraint unique_follow
         unique (UserID, TargetID, Type),
     constraint follows_ibfk_1
         foreign key (UserID) references users (UserID)
-)
-    engine = InnoDB;
+);
 
 create table message
 (
     MessageID      int auto_increment
         primary key,
-    SenderID       int                                  not null,
-    ReceiverID     int                                  not null,
-    MessageContent text                                 not null,
-    SentTime       datetime   default CURRENT_TIMESTAMP not null,
-    IsRead         tinyint(1) default 0                 not null,
+    SenderID       int        null comment '发送者ID',
+    ReceiverID     int        null comment '接收者ID',
+    MessageContent text       null comment '消息内容',
+    SentTime       datetime   null comment '发送时间',
+    IsRead         tinyint(1) null comment '是否已读',
     constraint message_ibfk_1
         foreign key (SenderID) references users (UserID)
             on delete cascade,
     constraint message_ibfk_2
         foreign key (ReceiverID) references users (UserID)
             on delete cascade
-)
-    engine = InnoDB;
+);
 
 create index ReceiverID
     on message (ReceiverID);
@@ -200,16 +201,15 @@ create table notifications
 (
     NotificationID int auto_increment
         primary key,
-    UserID         int                                null,
-    Type           enum ('MENTION', 'SYSTEM')         not null,
-    Content        text                               not null,
-    IsRead         tinyint  default 0                 null comment '标记是否已读，0为未读，1为已读',
-    ReferenceID    int                                null comment '根据类型，可能关联不同的ID，如COMMENTID',
-    CreateTime     datetime default CURRENT_TIMESTAMP null,
+    UserID         int                        null comment '用户ID',
+    Type           enum ('MENTION', 'SYSTEM') null comment '类型',
+    Content        text                       null comment '内容',
+    IsRead         tinyint                    null comment '是否已读',
+    ReferenceID    int                        null comment '参考ID',
+    CreateTime     datetime                   null comment '创建时间',
     constraint notifications_ibfk_1
         foreign key (UserID) references users (UserID)
-)
-    engine = InnoDB;
+);
 
 create index UserID
     on notifications (UserID);
@@ -218,31 +218,29 @@ create table playlists
 (
     PlaylistID  int auto_increment
         primary key,
-    UserID      int                                  not null,
-    Name        varchar(255)                         not null,
-    Description text                                 null,
-    Public      tinyint(1) default 1                 null,
-    CreateTime  timestamp  default CURRENT_TIMESTAMP null,
-    UpdateTime  timestamp  default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP,
+    UserID      int          null comment '用户ID',
+    Name        varchar(255) null comment '播放列表名称',
+    Description text         null comment '描述',
+    Public      tinyint(1)   null comment '是否公开',
+    CreateTime  timestamp    null comment '创建时间',
+    UpdateTime  timestamp    null comment '更新时间',
     constraint playlists_ibfk_1
         foreign key (UserID) references users (UserID)
-)
-    engine = InnoDB;
+);
 
 create table playlist_songs
 (
     PlaylistSongID int auto_increment
         primary key,
-    PlaylistID     int not null,
-    SongID         int not null,
+    PlaylistID     int null comment '播放列表ID',
+    SongID         int null comment '歌曲ID',
     constraint playlist_songs_ibfk_1
         foreign key (PlaylistID) references playlists (PlaylistID)
             on update cascade on delete cascade,
     constraint playlist_songs_ibfk_2
         foreign key (SongID) references songs (SongID)
             on update cascade on delete cascade
-)
-    engine = InnoDB;
+);
 
 create index PlaylistID
     on playlist_songs (PlaylistID);
@@ -257,16 +255,15 @@ create table useractivitylogs
 (
     ID                  int auto_increment
         primary key,
-    UserID              int                                not null,
-    ActivityType        varchar(100)                       not null,
-    ActivityDescription text                               null,
-    IPAddress           varchar(45)                        not null,
-    Timestamp           datetime default CURRENT_TIMESTAMP not null,
+    UserID              int          null comment '用户ID',
+    ActivityType        varchar(100) null comment '活动类型',
+    ActivityDescription text         null comment '活动描述',
+    IPAddress           varchar(45)  null comment 'IP地址',
+    Timestamp           datetime     null comment '时间戳',
     constraint useractivitylogs_ibfk_1
         foreign key (UserID) references users (UserID)
             on delete cascade
-)
-    engine = InnoDB;
+);
 
 create index UserID
     on useractivitylogs (UserID);
@@ -278,18 +275,16 @@ create table vips
 (
     VIPID         int auto_increment
         primary key,
-    UserID        int                                not null,
-    VIPLevel      int      default 1                 not null,
-    VIPPoints     int      default 0                 null,
-    StartDate     datetime default CURRENT_TIMESTAMP null,
-    EndDate       datetime                           null,
-    RenewalStatus tinyint  default 0                 null comment '0 for not renewed, 1 for renewed',
-    SpecialNotes  text                               null,
+    UserID        int      null comment '用户ID',
+    VIPLevel      int      null comment 'VIP等级',
+    VIPPoints     int      null comment 'VIP积分',
+    StartDate     datetime null comment '开始日期',
+    EndDate       datetime null comment '结束日期',
+    RenewalStatus tinyint  null comment '续订状态',
+    SpecialNotes  text     null comment '特别备注',
     constraint UserID
         unique (UserID),
     constraint vips_ibfk_1
         foreign key (UserID) references users (UserID)
-)
-    engine = InnoDB;
-
+);
 

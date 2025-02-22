@@ -1,8 +1,10 @@
+import asyncio
 import json
 import logging
 import os
 import time
 import uuid
+from contextlib import asynccontextmanager
 from datetime import timedelta
 from io import BytesIO
 
@@ -856,55 +858,83 @@ def get_cover_from_file(id, covers_dir):
     return None  # 如果没有找到封面，返回 None
 
 
+@asynccontextmanager
+async def async_db_connection():
+    db = get_database_connection()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
 @app.route('/api/lrc/<int:song_id>')
-def get_lrc(song_id):
+async def get_lrc(song_id):
     if song_id:
         try:
-            db = get_database_connection()
-            cursor = db.cursor()
-            query = "SELECT Lyrics FROM songs WHERE SongID = %s;"
-            cursor.execute(query, (song_id,))
-            song_lrc = cursor.fetchone()
+            async with async_db_connection() as db:
+                cursor = db.cursor()
+                query = "SELECT Lyrics FROM songs WHERE SongID = %s;"
+                cursor.execute(query, (song_id,))
+                song_lrc = cursor.fetchone()
 
-            if song_lrc and song_lrc[0]:
-                lrc_filename = f"{song_id}.lrc"
-                response = make_response(song_lrc[0])
-                response.headers.set('Content-Disposition', 'attachment', filename=lrc_filename)
-                response.headers.set('Content-Type', 'text/plain')
-                return response
-            cursor.close()
-            cursor = db.cursor()
-            query = "SELECT artists.Name, songs.Title FROM songs JOIN artists ON songs.ArtistID = artists.ArtistID WHERE SongID = %s;"
-            cursor.execute(query, (song_id,))
-            song_info = cursor.fetchone()
-
-            if song_info:
-                artist = song_info[0]
-                title = song_info[1]
-                lrc_filename = f"{base_dir}/lrc/{artist} - {title}.lrc"
-
-                if os.path.exists(lrc_filename):
-                    print(f"Reading lyrics from file: {lrc_filename}")
-                    with open(lrc_filename, 'r', encoding='utf-8') as file:
-                        lyrics = file.read()
-                    update_query = "UPDATE songs SET Lyrics = %s WHERE SongID = %s;"
-                    cursor.execute(update_query, (lyrics, song_id))
-                    db.commit()
-                    cursor.close()
-                    response = make_response(lyrics)
-                    response.headers.set('Content-Disposition', 'attachment', filename=f"{song_id}.lrc")
+                if song_lrc and song_lrc[0]:
+                    lrc_filename = f"{song_id}.lrc"
+                    response = make_response(song_lrc[0])
+                    response.headers.set('Content-Disposition', 'attachment', filename=lrc_filename)
                     response.headers.set('Content-Type', 'text/plain')
-
                     return response
-            return make_response("Lyrics not found.", 404)
+
+                cursor.close()
+                cursor = db.cursor()
+                query = "SELECT artists.Name, songs.Title FROM songs JOIN artists ON songs.ArtistID = artists.ArtistID WHERE SongID = %s;"
+                cursor.execute(query, (song_id,))
+                song_info = cursor.fetchone()
+
+                if song_info:
+                    artist = song_info[0]
+                    title = song_info[1]
+                    lrc_filename = f"{base_dir}/lrc/{artist} - {title}.lrc"
+
+                    if os.path.exists(lrc_filename):
+                        print(f"Reading lyrics from file: {lrc_filename}")
+                        with open(lrc_filename, 'r', encoding='utf-8') as file:
+                            lyrics = file.read()
+
+                        # 异步写入数据库
+                        await asyncio.to_thread(write_lyrics_to_db, lyrics, song_id)
+
+                        response = make_response(lyrics)
+                        response.headers.set('Content-Disposition', 'attachment', filename=f"{song_id}.lrc")
+                        response.headers.set('Content-Type', 'text/plain')
+                        return response
+                    else:
+                        tmp_file_dir = os.path.join(base_dir, 'temp', f'info_{song_id}.json')
+                        with open(tmp_file_dir, 'r', encoding='utf-8') as f:
+                            data = json.load(f)
+                            lrc_content = data['lyric']
+
+                        response = make_response(lrc_content)
+                        response.headers.set('Content-Disposition', 'attachment', filename=f"{song_id}.lrc")
+                        response.headers.set('Content-Type', 'text/plain')
+                        return response
+
+                return make_response("Lyrics not found.", 404)
 
         except Exception as e:
             print(f"Error: {e}")
             return make_response("An error occurred while retrieving lyrics.", 500)
 
-        finally:
-            cursor.close()
-            db.close()
+
+def write_lyrics_to_db(lyrics, song_id):
+    db = get_database_connection()
+    cursor = db.cursor()
+    update_query = "UPDATE songs SET Lyrics = %s WHERE SongID = %s;"
+    cursor.execute(update_query, (lyrics, song_id))
+    db.commit()
+    cursor.close()
+    db.close()
+
+    return True
 
     return make_response("Invalid song ID.", 400)
 
