@@ -59,13 +59,15 @@ def add_song_to_database(file_path):
     comments = None
     if id3v2:
         comm_frame = id3v2.get("COMM::eng") or id3v2.get("COMM")
-        comments = comm_frame.text[0] if comm_frame else None
+        if comm_frame:
+            comments = comm_frame.text[0] if isinstance(comm_frame.text, list) else comm_frame.text
 
     # 歌词处理
     lyrics = None
     if id3v2:
         uslt_frame = next((frame for frame in id3v2.getall("USLT") if frame), None)
-        lyrics = uslt_frame.text if uslt_frame else None
+        if uslt_frame:
+            lyrics = uslt_frame.text if isinstance(uslt_frame.text, str) else uslt_frame.text[0]
 
     # 音频技术信息
     channels = audio.info.channels if hasattr(audio.info, "channels") else None
@@ -76,20 +78,20 @@ def add_song_to_database(file_path):
 
     # 数据库操作
     cursor.execute("SELECT ArtistID FROM artists WHERE Name = %s", (artist,))
-    result = cursor.fetchone()  # 确保读取结果
+    result = cursor.fetchone()
     artist_id = result[0] if result else None
     if not artist_id:
         cursor.execute("INSERT INTO artists (Name) VALUES (%s)", (artist,))
         artist_id = cursor.lastrowid
-        db.commit()  # 提交插入操作
+        db.commit()
 
     cursor.execute("SELECT AlbumID FROM albums WHERE Title = %s", (album,))
-    result = cursor.fetchone()  # 确保读取结果
+    result = cursor.fetchone()
     album_id = result[0] if result else None
     if not album_id:
         cursor.execute("INSERT INTO albums (Title, ArtistID) VALUES (%s, %s)", (album, artist_id))
         album_id = cursor.lastrowid
-        db.commit()  # 提交插入操作
+        db.commit()
 
     current_time = datetime.now()
 
