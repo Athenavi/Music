@@ -870,6 +870,9 @@ async def async_db_connection():
 def get_lrc(song_id):
     if song_id:
         try:
+            lrc_file_dir = os.path.join(base_dir, 'lrc', f'{song_id}.lrc')
+            if os.path.exists(lrc_file_dir):
+                send_file(lrc_file_dir, mimetype='text/plain')
             with get_db_connection() as db:  # 假设你有一个同步的数据库连接函数 db_connection
                 cursor = db.cursor()
                 query = "SELECT Lyrics FROM songs WHERE SongID = %s;"
@@ -888,6 +891,7 @@ def get_lrc(song_id):
                     with open(tmp_file_dir, 'r', encoding='utf-8') as f:
                         data = json.load(f)
                         lrc_content = data['lyric']
+                        save_lyrics(lrc_content, song_id)
 
                     response = make_response(lrc_content)
                     response.headers.set('Content-Disposition', 'attachment', filename=f"{song_id}.lrc")
@@ -899,15 +903,10 @@ def get_lrc(song_id):
             return make_response("An error occurred while retrieving lyrics.", 500)
 
 
-def write_lyrics_to_db(lyrics, song_id):
-    db = get_db_connection()
-    cursor = db.cursor()
-    update_query = "UPDATE songs SET Lyrics = %s WHERE SongID = %s;"
-    cursor.execute(update_query, (lyrics, song_id))
-    db.commit()
-    cursor.close()
-    db.close()
-    return True
+def save_lyrics(lyrics, song_id):
+    lrc_file_dir = os.path.join(base_dir, 'lrc', f'{song_id}.lrc')
+    with open(lrc_file_dir, 'w', encoding='utf-8') as f:
+        f.write(lyrics)
 
 
 @app.route('/api/sidebar/')

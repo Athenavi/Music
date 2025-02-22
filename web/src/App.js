@@ -59,7 +59,7 @@ function App() {
     return (
         <Router>
             <nav>
-                <Link to="/"><img src="https://7trees.cn/zyImg/qks2862/chenIn.png" alt="Logo" className="logo"/> zyMusic</Link>
+                <Link to="/"><img src="https://7trees.cn/zyImg/qks2862/Athenavi.png" alt="Logo" className="logo"/></Link>
                 <Link to="/discover/playlists">发现音乐</Link>
                 {token ? (
                     <Link to="/my">我</Link>
