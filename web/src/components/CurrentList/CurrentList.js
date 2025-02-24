@@ -2,9 +2,9 @@ import React, {useState, useEffect, useCallback} from 'react';
 import {Link} from 'react-router-dom';
 import API_URL from '../../config';
 import {DragDropContext, Droppable, Draggable} from 'react-beautiful-dnd';
-import {MdDragIndicator, MdClose} from 'react-icons/md';
-import PropTypes from 'prop-types'; // 添加PropTypes验证
-import './CurrentList.css'; // 引入样式文件
+import {MdDragIndicator, MdClose, MdEdit, MdCheck} from 'react-icons/md'; // 添加编辑图标
+import PropTypes from 'prop-types';
+import './CurrentList.css';
 
 function CurrentList({pid, setMusicId, handleNextSong, toggleVisable}) {
     const [data, setData] = useState(null);
@@ -54,18 +54,24 @@ function CurrentList({pid, setMusicId, handleNextSong, toggleVisable}) {
         });
     };
 
-    // 处理拖动结束事件
+
+    // 修复拖拽样式问题
     const handleDragEnd = (result) => {
         if (!result.destination || !isEditing) return;
-        if (result.source.index === result.destination.index) return;
 
-        const items = [...data.播放列表]; // 创建新的数组副本
+        const items = Array.from(data.播放列表);
         const [reorderedItem] = items.splice(result.source.index, 1);
         items.splice(result.destination.index, 0, reorderedItem);
 
         const newData = {...data, 播放列表: items};
         setData(newData);
         localStorage.setItem('currentPlaylist', JSON.stringify(newData));
+
+        // 强制重新渲染解决样式残留问题
+        setTimeout(() => {
+            const list = document.querySelector('.song-list');
+            if (list) list.style = '';
+        }, 10);
     };
 
     return (
@@ -74,8 +80,13 @@ function CurrentList({pid, setMusicId, handleNextSong, toggleVisable}) {
                 <button
                     onClick={() => setIsEditing(!isEditing)}
                     className={`edit-button ${isEditing ? 'active' : ''}`}
+                    title={isEditing ? '完成编辑' : '编辑列表'}
                 >
-                    {isEditing ? '完成编辑' : '编辑列表'}
+                    {isEditing ? (
+                        <MdCheck size={20} className="edit-icon"/>
+                    ) : (
+                        <MdEdit size={18} className="edit-icon"/>
+                    )}
                 </button>
                 {isEditing && <span className="edit-hint">长按拖动歌曲排序</span>}
             </div>
@@ -86,7 +97,11 @@ function CurrentList({pid, setMusicId, handleNextSong, toggleVisable}) {
                         {(provided) => (
                             <ul
                                 {...provided.droppableProps}
-                                ref={provided.innerRef}
+                                ref={(el) => {
+                                    provided.innerRef(el);
+                                    // 修复移动端拖拽容器引用问题
+                                    if (el) el.style.minHeight = '10px';
+                                }}
                                 className="song-list"
                             >
                                 {data.播放列表.map((item, index) => (
@@ -105,17 +120,17 @@ function CurrentList({pid, setMusicId, handleNextSong, toggleVisable}) {
                                                 } ${isEditing ? 'editing' : ''}`}
                                                 style={{
                                                     ...provided.draggableProps.style,
-                                                    background: snapshot.isDragging ? '#f0f0f0' : 'white',
-                                                    transition: 'background-color 0.2s ease',
+                                                    // 修复拖拽时元素偏移问题
+                                                    transform: provided.draggableProps.style?.transform || 'none',
                                                 }}
                                             >
                                                 <div className="song-content">
-                                                    {/* 拖拽手柄 */}
                                                     {isEditing && (
                                                         <div
                                                             {...provided.dragHandleProps}
                                                             className="drag-handle"
-                                                            style={{touchAction: 'none', cursor: 'grab'}}
+                                                            // 修复移动端触摸问题
+                                                            onTouchStart={(e) => e.stopPropagation()}
                                                         >
                                                             <MdDragIndicator size={20}/>
                                                         </div>
@@ -123,7 +138,11 @@ function CurrentList({pid, setMusicId, handleNextSong, toggleVisable}) {
 
                                                     <Link
                                                         to={`/song?id=${item.id}`}
-                                                        onClick={() => {
+                                                        onClick={(e) => {
+                                                            if (isEditing) {
+                                                                e.preventDefault();
+                                                                return;
+                                                            }
                                                             setMusicId(item.id);
                                                             handleNextSong(item.id);
                                                         }}
@@ -133,10 +152,12 @@ function CurrentList({pid, setMusicId, handleNextSong, toggleVisable}) {
                                                         <p>{item.artist}</p>
                                                     </Link>
 
-                                                    {/* 删除按钮 */}
                                                     {isEditing && (
                                                         <button
-                                                            onClick={() => handleRemove(item.id)}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation(); // 修复事件冒泡问题
+                                                                handleRemove(item.id)
+                                                            }}
                                                             className="delete-button"
                                                         >
                                                             <MdClose size={18}/>
