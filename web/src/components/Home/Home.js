@@ -64,8 +64,6 @@ function Home({playing, setPlaying, handleNextSong, token, audioRef}) {
     const [musicId, setMusicId] = useState(searchParams.get("id") || "0");
     const [playlistId, setPlaylistId] = useState(searchParams.get("pid") || "0");
     const [coverUrl, setCoverUrl] = useState(`${API_URL}/music_cover/${musicId}.png`);
-    const lrcDivRef = useRef(null);
-    const otherDivRef = useRef(null);
     const songElementRef = useRef(null);
 
     useEffect(() => {
@@ -82,26 +80,22 @@ function Home({playing, setPlaying, handleNextSong, token, audioRef}) {
     }, [playing, musicId]);
 
 
-    const toggleVisable = (id) => {
-        let element;
-        let songElement = songElementRef.current;
+    const [showLyrics, setShowLyrics] = useState(true);
+    const [showPlaylist, setShowPlaylist] = useState(true);
+    const [panelWidth, setPanelWidth] = useState('75%');  // 新增宽度状态
 
-        if (id === 'lrc_div') {
-            element = lrcDivRef.current;
-        } else if (id === 'other_div') {
-            element = otherDivRef.current;
-        }
-
-        if (element && songElement) {
-            const elementDisplay = window.getComputedStyle(element).display;
-
-            if (elementDisplay === 'none') {
-                element.style.display = 'block';
-                if (id === 'lrc_div') songElement.style.width = '55%';
-            } else {
-                element.style.display = 'none';
-                if (id === 'lrc_div') songElement.style.width = '40%';
-            }
+    // 完全重构的切换函数
+    const toggleVisibility = (panel) => {
+        switch (panel) {
+            case 'lrc_div':
+                setShowLyrics(prev => !prev);
+                setPanelWidth(prev => prev === '55%' ? '75%' : '55%');
+                break;
+            case 'other_div':
+                setShowPlaylist(prev => !prev);
+                break;
+            default:
+                break;
         }
     };
 
@@ -113,18 +107,20 @@ function Home({playing, setPlaying, handleNextSong, token, audioRef}) {
         let activeLine = null;
 
         const handleTimeUpdate = () => {
-            const url = new URL(audio.src);
-            const currentMusicId = url.pathname.split('/')[2].split('.')[0];
-
-            // 检查播放器 URL 中的音乐 ID 是否和歌词页面的 ID 相匹配
-            if (currentMusicId !== musicId) {
-                return;
-            }
+            const audio = audioRef.current;
+            const lyricsDiv = document.getElementById('lyrics');
+            const lyricLines = lyricsDiv.getElementsByTagName('p');
+            let activeLine = null;
 
             const currentTime = audio.currentTime;
 
             for (let i = 0; i < lyricLines.length; i++) {
-                const timeStr = lyricLines[i].id.split('_')[1];
+                const lineId = lyricLines[i].id;
+                if (!lineId) {
+                    continue;  // 如果 id 不存在或者为 undefined，跳过当前循环
+                }
+
+                const timeStr = lineId.split('_')[1];
                 const lineTime = parseLyricTime(timeStr);
 
                 if (currentTime >= lineTime) {
@@ -144,6 +140,9 @@ function Home({playing, setPlaying, handleNextSong, token, audioRef}) {
         };
 
         function parseLyricTime(timeStr) {
+            if (!timeStr) {
+                return 0;
+            }
             const parts = timeStr.split(':');
             const minutes = parseInt(parts[0], 10);
             const seconds = parseFloat(parts[1]);
@@ -159,33 +158,53 @@ function Home({playing, setPlaying, handleNextSong, token, audioRef}) {
 
     return (
         <div className="music-app">
-            <div className="app-container">
+            <div className="app-container" ref={songElementRef} style={{width: panelWidth}}>
                 <Playlist
+                    toggleVisable={toggleVisibility}
                     coverUrl={coverUrl}
-                    toggleVisable={toggleVisable}
                     likeThisSong={likeThisSong}
                     shareThisSong={shareThisSong}
                     playing={playing}
                     musicId={musicId}
                 />
 
-                <div className="lyrics-panel" id="lrc_div" key={musicId}>
-                    <div className="lyrics-container">
-                        <SongDetail musicId={musicId} key={musicId}/>
+                {/* 歌词面板 - 通过状态控制显示 */}
+                {showLyrics && (
+                    <div className="lyrics-panel" id="lrc_div" key={musicId}>
+                        <div className="lyrics-container">
+                            <SongDetail musicId={musicId} key={musicId}/>
+                        </div>
+                        {/* 添加关闭按钮 */}
+                        <button
+                            className="close-btn"
+                            onClick={() => toggleVisibility('lrc_div')}
+                        >
+                            ×
+                        </button>
                     </div>
-                </div>
+                )}
 
-                <div className="playlist-panel" id="other_div">
-                    <div className="playlist-container">
-                        <CurrentList
-                            pid={playlistId}
-                            setMusicId={setMusicId}
-                            handleNextSong={handleNextSong}
-                            key={musicId}
-                            toggleVisable={toggleVisable}
-                        />
+                {/* 播放列表面板 - 通过状态控制显示 */}
+                {showPlaylist && (
+                    <div className="playlist-panel" id="other_div">
+                        <div className="playlist-container">
+                            <CurrentList
+                                pid={playlistId}
+                                setMusicId={setMusicId}
+                                handleNextSong={handleNextSong}
+                                key={musicId}
+                                toggleVisable={toggleVisibility}
+                            />
+                        </div>
+                        {/* 添加关闭按钮 */}
+                        <button
+                            className="close-btn"
+                            onClick={() => toggleVisibility('other_div')}
+                        >
+                            ×
+                        </button>
                     </div>
-                </div>
+                )}
             </div>
 
             <footer className="app-footer">

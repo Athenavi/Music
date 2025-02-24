@@ -29,7 +29,7 @@ body::before {
 .songBtn button {
     margin-top: 55px;
     margin-left: 22px;
-    background: linear-gradient(135deg, #ff375a, #ff5e78); /* 合并最后的定义 */
+    background: linear-gradient(135deg, #ff375a, #ff5e78);
     color: #fff;
     border: none;
     padding: 8px 20px;
@@ -40,7 +40,7 @@ body::before {
 }
 
 .songBtn button:hover {
-    background: linear-gradient(135deg, #ff375a, #ff5e78); /* 合并最后的定义 */
+    background: linear-gradient(135deg, #ff375a, #ff5e78);
 }
 
 .cr {
@@ -57,8 +57,12 @@ body::before {
 }
 
 @keyframes rotation {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .song {
@@ -97,22 +101,6 @@ body::before {
     width: 30%;
     height: 325px;
     overflow-y: scroll;
-}
-
-.other_div {
-    padding: 8px;
-    max-width: 60vh;
-    overflow-y: scroll;
-}
-
-.other_div li {
-    background: indigo;
-    font-size: 12px;
-    width: 100%;
-}
-
-.other_div a:hover {
-    text-decoration: none;
 }
 
 .audio-controls {
@@ -252,6 +240,7 @@ body::before {
     gap: 20px;
     padding: 2rem;
     min-height: calc(100vh - 60px);
+    transition: width 0.3s ease-in-out;
 }
 
 .player-panel {
@@ -356,8 +345,12 @@ body::before {
 }
 
 @keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* 响应式设计 */
@@ -388,4 +381,21 @@ body::before {
         z-index: 100;
         background: var(--background);
     }
+}
+
+/* 关闭按钮样式 */
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+.close-btn:hover {
+    opacity: 0.8;
 }
