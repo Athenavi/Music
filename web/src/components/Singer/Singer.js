@@ -4,6 +4,8 @@ import {Link, useLocation} from "react-router-dom";
 import removeFromPlaylist from "../func/removeFromPlaylist";
 import addToPlaylist from "../func/addToPlaylist";
 import {likeThisSong} from "../func/songMenu";
+import {FiPlus, FiMinus, FiHeart, FiMusic, FiUser} from 'react-icons/fi';
+import './SingerDetail.scss';
 
 const SingerDetail = () => {
     const [data, setData] = useState(null);
@@ -58,85 +60,116 @@ const SingerDetail = () => {
         }
     }, [visibleItems, data]);
 
+
     return (
-        <>
-            <div className="index-container">
-                {data ? (
-                    <>
-                        <ul>
-                            {Object.entries(data).map(([key, value]) => (
-                                <li key={key} className="list_container" style={{width: '100%', marginBottom: '10px'}}>
-                                    <h3>{name}</h3>
-                                    <ol style={{display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between'}}>
-                                        {value && value.slice(0, visibleItems).map((item) => (
-                                            <li key={item.id} className="list_container"
-                                                style={{width: '16%', margin: '7px', background: 'cornflowerblue'}}>
-                                                {
-                                                    singerId === '0' ? (
-                                                        <>
-                                                            <img
-                                                                className="cover_img"
-                                                                src={`${API_URL}/singer/${item.id}.png`}
-                                                                alt="封面图片"
-                                                                style={{width: '50%', marginBottom: '5px'}}
-                                                            />
-                                                            <Link
-                                                                to={`/discover/singer?uid=${item.id}&name=${item.artist}`}>
-                                                                <p>{item.artist}</p>
-                                                            </Link>
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <img
-                                                                className="cover_img"
-                                                                src={`${API_URL}/music_cover/${item.id}.png`}
-                                                                alt="封面图片"
-                                                                style={{width: '20%', marginBottom: '5px'}}
-                                                            />
-                                                            <Link
-                                                                to={`/song?id=${item.id}&name=${item.artist}`}>
-                                                                <p>{item.artist}</p>
-                                                            </Link>
-                                                            <div>
-                                                                <p className='song_control'>
-                                                                    <button onClick={() => removeFromPlaylist(item[0])}
-                                                                            className='button1'>-
-                                                                    </button>
-                                                                    <button onClick={() => addToPlaylist({
-                                                                        id: item.id,
-                                                                        artist: name,
-                                                                        title: item.artist
-                                                                    })} className='button2'>+
-                                                                    </button>
-                                                                    <button onClick={() => likeThisSong(item[0])}
-                                                                            className='button3'>♥
-                                                                    </button>
-                                                                </p>
-                                                            </div>
+        <div className="singer-detail-container">
+            {data ? (
+                <>
+                    <div className="detail-header">
+                        <h1 className="artist-title">{name}</h1>
+                        <div className="stats-badge">
+                            <FiMusic className="icon"/>
+                            <span>{data.artists.length}首作品</span>
+                        </div>
+                    </div>
 
+                    <div className="grid-container">
+                        {data.artists.slice(0, visibleItems).map((item) => (
+                            <div key={item.id} className="grid-item">
+                                {singerId === '0' ? (
+                                    <Link
+                                        to={`/discover/singer?uid=${item.id}&name=${item.artist}`}
+                                        className="artist-card"
+                                    >
+                                        <div className="image-wrapper">
+                                            <img
+                                                src={`${API_URL}/singer/${item.id}.png`}
+                                                alt={item.artist}
+                                                className="artist-image"
+                                            />
+                                            <div className="hover-overlay"/>
+                                        </div>
+                                        <h3 className="artist-name">{item.artist}</h3>
+                                        <p className="artist-type">歌手</p>
+                                    </Link>
+                                ) : (
+                                    <div className="song-card">
+                                        <div className="song-image-wrapper">
+                                            <img
+                                                src={`${API_URL}/music_cover/${item.id}.png`}
+                                                alt={item.artist}
+                                                className="song-cover"
+                                            />
+                                            <div className="song-controls">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        addToPlaylist({
+                                                            id: item.id,
+                                                            artist: name,
+                                                            title: item.artist
+                                                        });
+                                                    }}
+                                                    className="control-button add"
+                                                >
+                                                    <FiPlus/>
+                                                </button>
+                                                <Link
+                                                    to={`/song?id=${item.id}&name=${item.artist}`}
+                                                    className="play-button"
+                                                >
+                                                    播放
+                                                </Link>
+                                            </div>
+                                        </div>
+                                        <div className="song-info">
+                                            <Link
+                                                to={`/song?id=${item.id}&name=${item.artist}`}
+                                                className="song-title"
+                                            >
+                                                {item.artist}
+                                            </Link>
+                                            <div className="song-actions">
+                                                <button
+                                                    onClick={() => removeFromPlaylist(item[0])}
+                                                    className="action-button"
+                                                >
+                                                    <FiMinus/>
+                                                </button>
+                                                <button
+                                                    onClick={() => likeThisSong(item[0])}
+                                                    className="action-button like"
+                                                >
+                                                    <FiHeart/>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
 
-                                                        </>
-
-                                                    )
-                                                }
-                                            </li>
-                                        ))}
-                                    </ol>
-                                </li>
-                            ))}
-                        </ul>
+                    <div className="load-more-container">
                         {showMore ? (
-                            <button onClick={loadMoreItems} id='btn_load_more'
-                                    style={{marginBottom: '45px'}}>查看更多</button>
+                            <button
+                                onClick={loadMoreItems}
+                                className="load-more-button"
+                            >
+                                加载更多
+                            </button>
                         ) : (
-                            <p style={{marginBottom: '45px'}}>已经到底了呢</p>
+                            <p className="end-hint">—— 已显示全部内容 ——</p>
                         )}
-                    </>
-                ) : (
-                    <p>Loading...</p>
-                )}
-            </div>
-        </>
+                    </div>
+                </>
+            ) : (
+                <div className="loading-container">
+                    <div className="loading-spinner"/>
+                    加载中...
+                </div>
+            )}
+        </div>
     );
 };
 
