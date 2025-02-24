@@ -102,16 +102,12 @@ function Home({playing, setPlaying, handleNextSong, token, audioRef}) {
 
     useEffect(() => {
         const audio = audioRef.current;
-        const lyricsDiv = document.getElementById('lyrics');
-        const lyricLines = lyricsDiv.getElementsByTagName('p');
+        let lyricsDiv = document.getElementById('lyrics');
+        if (!lyricsDiv) return;  // 如果 lyricsDiv 不存在，直接返回
+        let lyricLines = lyricsDiv.getElementsByTagName('p');
         let activeLine = null;
 
         const handleTimeUpdate = () => {
-            const audio = audioRef.current;
-            const lyricsDiv = document.getElementById('lyrics');
-            const lyricLines = lyricsDiv.getElementsByTagName('p');
-            let activeLine = null;
-
             const currentTime = audio.currentTime;
 
             for (let i = 0; i < lyricLines.length; i++) {
@@ -151,10 +147,11 @@ function Home({playing, setPlaying, handleNextSong, token, audioRef}) {
 
         audio.addEventListener('timeupdate', handleTimeUpdate);
 
+        // 在组件卸载时移除事件监听器
         return () => {
             audio.removeEventListener('timeupdate', handleTimeUpdate);
         };
-    }, [musicId, playing, audioRef]);
+    }, [musicId, playing, audioRef, showLyrics]);
 
     return (
         <div className="music-app">

@@ -353,35 +353,6 @@ body::before {
     }
 }
 
-/* 响应式设计 */
-@media (max-width: 1024px) {
-    .app-container {
-        grid-template-columns: 1fr;
-        padding: 1rem;
-    }
-
-    .player-panel {
-        max-width: 400px;
-        margin: 0 auto;
-    }
-
-    .lyrics-panel,
-    .playlist-panel {
-        display: none;
-    }
-
-    #lrc_div.active,
-    #other_div.active {
-        display: block;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 100;
-        background: var(--background);
-    }
-}
 
 /* 关闭按钮样式 */
 .close-btn {
@@ -398,4 +369,34 @@ body::before {
 
 .close-btn:hover {
     opacity: 0.8;
+}
+
+
+/* 响应式设计 */
+@media (max-width: 668px) {
+    .app-container {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+    }
+
+    .player-panel {
+        max-width: 300px;
+        margin: 0 auto;
+    }
+
+    .lyrics-panel {
+        display: none;
+    }
+
+    #lrc_div.active,
+    #other_div.active {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 100;
+        background: var(--background);
+    }
 }

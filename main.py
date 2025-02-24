@@ -252,7 +252,7 @@ def login_status():
 
 @app.route('/api/Recommend', methods=['GET'])
 def api_Recommend():
-    pageType = request.args.get('pageType')
+    pageType = request.args.get('pageType') or 'al'
     db = get_db_connection()
     cursor = db.cursor()
 
