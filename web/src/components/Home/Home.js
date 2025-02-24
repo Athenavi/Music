@@ -1,10 +1,11 @@
-import React, {useRef, useState, useEffect} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {useLocation} from "react-router-dom";
 import SongDetail from '../SongDetail/SongDetail';
 import CurrentList from "../CurrentList/CurrentList";
 import API_URL from '../../config';
 import './Home.css';
-import {shareThisSong, likeThisSong} from "../func/songMenu";
+import {likeThisSong, shareThisSong} from "../func/songMenu";
+import {FaHeart, FaList, FaMusic} from 'react-icons/fa';
 
 // Playlist component
 const Playlist = ({coverUrl, toggleVisable, likeThisSong, shareThisSong, playing, musicId}) => {
@@ -18,27 +19,43 @@ const Playlist = ({coverUrl, toggleVisable, likeThisSong, shareThisSong, playing
     }, [playing]);
 
     return (
-        <div className="playlist">
-            <div className="song" id='song'>
+        <div className="player-panel">
+            <div className="album-art-container">
                 <img
                     ref={imgRef}
                     src={coverUrl}
-                    alt="封面图片"
-                    style={{width: '100%'}}
+                    alt="专辑封面"
+                    className={`album-art ${playing ? 'playing' : ''}`}
                 />
+                <div className="art-overlay"></div>
             </div>
-            <div className='songBtn'>
-                <button onClick={() => likeThisSong()}>收藏</button>
-                {/*<button onClick={() => shareThisSong()}>分享</button>*/}
-                <button onClick={() => toggleVisable('lrc_div')}>
-                    词
+
+            <div className="control-buttons">
+                <button
+                    className="icon-btn"
+                    onClick={() => likeThisSong()}
+                    title="收藏"
+                >
+                    <FaHeart className="icon"/>
                 </button>
-                <button onClick={() => toggleVisable('other_div')}>
-                    ≡
+                <button
+                    className="icon-btn"
+                    onClick={() => toggleVisable('lrc_div')}
+                    title="歌词"
+                >
+                    <FaMusic className="icon"/>
+                </button>
+                <button
+                    className="icon-btn"
+                    onClick={() => toggleVisable('other_div')}
+                    title="播放列表"
+                >
+                    <FaList className="icon"/>
                 </button>
             </div>
         </div>
-    );
+    )
+
 };
 
 function Home({playing, setPlaying, handleNextSong, token, audioRef}) {
@@ -47,6 +64,9 @@ function Home({playing, setPlaying, handleNextSong, token, audioRef}) {
     const [musicId, setMusicId] = useState(searchParams.get("id") || "0");
     const [playlistId, setPlaylistId] = useState(searchParams.get("pid") || "0");
     const [coverUrl, setCoverUrl] = useState(`${API_URL}/music_cover/${musicId}.png`);
+    const lrcDivRef = useRef(null);
+    const otherDivRef = useRef(null);
+    const songElementRef = useRef(null);
 
     useEffect(() => {
         setMusicId(searchParams.get("id") || "0");
@@ -63,16 +83,25 @@ function Home({playing, setPlaying, handleNextSong, token, audioRef}) {
 
 
     const toggleVisable = (id) => {
-        const element = document.getElementById(id);
-        const song_element = document.getElementById('song');
-        const elementDisplay = window.getComputedStyle(element).display;
+        let element;
+        let songElement = songElementRef.current;
 
-        if (elementDisplay === 'none') {
-            element.style.display = 'block';
-            if (id === 'lrc_div') song_element.style.width = '55%';
-        } else {
-            element.style.display = 'none';
-            if (id === 'lrc_div') song_element.style.width = '40%';
+        if (id === 'lrc_div') {
+            element = lrcDivRef.current;
+        } else if (id === 'other_div') {
+            element = otherDivRef.current;
+        }
+
+        if (element && songElement) {
+            const elementDisplay = window.getComputedStyle(element).display;
+
+            if (elementDisplay === 'none') {
+                element.style.display = 'block';
+                if (id === 'lrc_div') songElement.style.width = '55%';
+            } else {
+                element.style.display = 'none';
+                if (id === 'lrc_div') songElement.style.width = '40%';
+            }
         }
     };
 
@@ -129,11 +158,8 @@ function Home({playing, setPlaying, handleNextSong, token, audioRef}) {
     }, [musicId, playing, audioRef]);
 
     return (
-        <div>
-            <div className="flex-container">
-                <div className='cr'>
-                    © CopyRight 2002-2024, 7trees.cn
-                </div>
+        <div className="music-app">
+            <div className="app-container">
                 <Playlist
                     coverUrl={coverUrl}
                     toggleVisable={toggleVisable}
@@ -143,15 +169,28 @@ function Home({playing, setPlaying, handleNextSong, token, audioRef}) {
                     musicId={musicId}
                 />
 
-                <div className='lrc_div' id='lrc_div' key={musicId}>
-                    <SongDetail musicId={musicId} key={musicId}/>
+                <div className="lyrics-panel" id="lrc_div" key={musicId}>
+                    <div className="lyrics-container">
+                        <SongDetail musicId={musicId} key={musicId}/>
+                    </div>
                 </div>
 
-                <div className='other_div' id='other_div'>
-                    <CurrentList pid={playlistId} setMusicId={setMusicId} handleNextSong={handleNextSong}
-                                 key={musicId} toggleVisable={toggleVisable}/>
+                <div className="playlist-panel" id="other_div">
+                    <div className="playlist-container">
+                        <CurrentList
+                            pid={playlistId}
+                            setMusicId={setMusicId}
+                            handleNextSong={handleNextSong}
+                            key={musicId}
+                            toggleVisable={toggleVisable}
+                        />
+                    </div>
                 </div>
             </div>
+
+            <footer className="app-footer">
+                © {new Date().getFullYear()} 7trees.cn 用音乐感动生活
+            </footer>
         </div>
     );
 }

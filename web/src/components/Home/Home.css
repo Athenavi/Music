@@ -20,7 +20,6 @@ body::before {
     z-index: -1;
 }
 
-
 .flex-container {
     padding-top: 20px;
     display: flex;
@@ -30,7 +29,7 @@ body::before {
 .songBtn button {
     margin-top: 55px;
     margin-left: 22px;
-    background: linear-gradient(135deg, #ff375a, #ffa62b);
+    background: linear-gradient(135deg, #ff375a, #ff5e78); /* 合并最后的定义 */
     color: #fff;
     border: none;
     padding: 8px 20px;
@@ -41,7 +40,7 @@ body::before {
 }
 
 .songBtn button:hover {
-    background: linear-gradient(135deg, #ff375a, #ff5e78);
+    background: linear-gradient(135deg, #ff375a, #ff5e78); /* 合并最后的定义 */
 }
 
 .cr {
@@ -58,12 +57,8 @@ body::before {
 }
 
 @keyframes rotation {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .song {
@@ -119,7 +114,6 @@ body::before {
 .other_div a:hover {
     text-decoration: none;
 }
-
 
 .audio-controls {
     display: flex;
@@ -229,8 +223,169 @@ body::before {
 }
 
 .remove_btn button {
+    /* 这里应该有具体的样式定义，如果为空，请添加或删除此行 */
 }
 
 .list_li {
     list-style-type: none;
+}
+
+:root {
+    --primary-color: #6c5ce7;
+    --secondary-color: #a8a5e6;
+    --background: #1a1a2e;
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --text-light: #ffffff;
+    --text-dark: #2d3336;
+}
+
+.music-app {
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--background) 0%, #16213e 100%);
+    color: var(--text-light);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.app-container {
+    display: grid;
+    grid-template-columns: 300px 1fr 300px;
+    gap: 20px;
+    padding: 2rem;
+    min-height: calc(100vh - 60px);
+}
+
+.player-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.album-art-container {
+    position: relative;
+    width: 100%;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.album-art {
+    width: 100%;
+    height: auto;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.album-art.playing {
+    animation: rotate 20s linear infinite;
+}
+
+.art-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, rgba(108, 92, 231, 0.3), transparent);
+}
+
+.control-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--glass-bg);
+    backdrop-filter: blur(5px);
+}
+
+.icon-btn:hover {
+    background: var(--primary-color);
+    transform: scale(1.1);
+}
+
+.icon-btn .icon {
+    color: var(--text-light);
+    font-size: 1.2rem;
+}
+
+.lyrics-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 2rem;
+    overflow: hidden;
+}
+
+.lyrics-container {
+    height: 70vh;
+    overflow-y: auto;
+    padding-right: 1rem;
+}
+
+.playlist-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 2rem;
+}
+
+.playlist-container {
+    height: 70vh;
+    overflow-y: auto;
+}
+
+.app-footer {
+    text-align: center;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* 响应式设计 */
+@media (max-width: 1024px) {
+    .app-container {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+    }
+
+    .player-panel {
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    .lyrics-panel,
+    .playlist-panel {
+        display: none;
+    }
+
+    #lrc_div.active,
+    #other_div.active {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 100;
+        background: var(--background);
+    }
 }
