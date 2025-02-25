@@ -1,150 +1,268 @@
-a {
-    padding-left: 18px;
-    text-decoration: none;
-    color: mediumspringgreen;
-}
-
-a:hover {
-    text-decoration: none;
-    color: red;
-}
-
-.index-container {
+/* 基础样式 */
+.toplist-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 2rem 1rem;
 }
 
-.list_container {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-    font-size: 22px;
-    max-width: 80vw;
-    overflow-x: auto;
-    max-height: 75vh;
-    overflow-y: auto;
-}
-
-.list_container li {
-    list-style-type: none;
-}
-
-#btn_load_more {
-    justify-content: center;
-    align-items: center;
-}
-
-.song_control {
-    display: flex;
-    align-items: flex-end;
-    justify-content: flex-start;
-}
-
-.button1, .button2, .button3 {
-    visibility: hidden;
-}
-
-.song_control:hover .button1 {
-    visibility: visible;
-    color: green;
-}
-
-.song_control:hover .button2 {
-    visibility: visible;
-    color: blue;
-}
-
-.song_control:hover .button3 {
-    visibility: visible;
-    color: red;
-}
-
-.button4 .bottomAlert {
-    visibility: visible;
-    width: 100%;
-    border: #61dafb;
-    color: goldenrod;
-    padding-top: 20px;
-    padding-bottom: 20px;
-}
-
-* {
-    box-sizing: border-box;
-    border: transparent;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f5f5f5;
-    color: #333;
-}
-
-h1 {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 15px;
-}
-
-span {
-    font-size: 16px;
-    color: #666;
-    margin-bottom: 10px;
-}
-
-ul {
-    list-style: none;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-}
-
-li {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-    color: #61dafb;
-    width: 30%;
-    margin-bottom: 20px;
-    background-color: transparent;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-h3 {
-    padding: 10px;
-    background-color: transparent;
-    border-bottom: 1px solid #e0e0e0;
-    border-radius: 5px 5px 0 0;
-}
-
-ol {
-    padding: 10px;
-}
-
-li img {
-    width: 100%;
-    border-radius: 5px 5px 0 0;
-}
-
-p {
-    padding: 10px;
-    font-size: 14px;
-}
-
-button {
-    padding: 10px 20px;
-    background-color: #ff6600;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #ff8533;
-}
-
-p.end-message {
+/* 头部样式 */
+.toplist-header {
     text-align: center;
-    color: #999;
-    margin-top: 20px;
+    margin-bottom: 3rem;
+}
+
+.toplist-title {
+    font-size: 2.25rem;
+    color: #2d3436;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.title-icon {
+    font-size: 1.5em;
+    color: #6c5ce7;
+}
+
+/* 歌曲卡片布局 */
+.toplist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.song-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.song-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 卡片元素样式 */
+.card-rank {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    background: rgba(108, 92, 231, 0.9);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+.card-media {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    aspect-ratio: 1/1;
+}
+
+.card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s ease;
+}
+
+.song-card:hover .card-overlay {
+    opacity: 1;
+}
+
+.play-button {
+    background: rgba(255, 255, 255, 0.9);
+    color: #2d3436;
+    border: none;
+    padding: 0.8rem;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.play-button:hover {
+    background: white;
+    transform: scale(1.1);
+}
+
+/* 卡片内容 */
+.card-content {
+    padding: 1rem 0.5rem;
+}
+
+.song-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2d3436;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 0.25rem;
+    transition: color 0.3s ease;
+}
+
+.song-title:hover {
+    color: #6c5ce7;
+}
+
+.song-artist {
+    color: #636e72;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* 操作按钮 */
+.card-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    justify-content: flex-end;
+}
+
+.action-button {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+}
+
+.action-button:hover {
+    background: #f8f9fa;
+}
+
+.like-button:hover { color: #e74c3c; }
+.share-button:hover { color: #3498db; }
+.remove-button:hover { color: #2d3436; }
+
+/* 加载更多 */
+.load-more-section {
+    text-align: center;
+    margin: 2rem 0;
+}
+
+.load-more-button {
+    background: #6c5ce7;
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 30px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.load-more-button:hover {
+    background: #5b4bc4;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(108, 92, 231, 0.2);
+}
+
+.progress-text {
+    font-size: 0.9rem;
+    margin-left: 0.5rem;
+    opacity: 0.8;
+}
+
+/* 底部提示 */
+.explore-footer {
+    text-align: center;
+    color: #b2bec3;
+    padding: 2rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.footer-icon {
+    font-size: 1.5rem;
+}
+
+/* 加载状态 */
+.loading-state {
+    text-align: center;
+    padding: 4rem 0;
+    color: #636e72;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* 错误状态 */
+.error-state {
+    text-align: center;
+    padding: 4rem 0;
+    color: #e74c3c;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.error-icon {
+    font-size: 2rem;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .toplist-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+    
+    .song-card {
+        padding: 0.8rem;
+    }
+    
+    .card-content {
+        padding: 0.8rem 0.3rem;
+    }
 }
