@@ -19,6 +19,13 @@ function App() {
     const [playing, setPlaying] = useState(false);
     const [musicId, setMusicId] = useState("0");
 
+    const [isNavExpanded, setIsNavExpanded] = useState(false); // 定义状态
+
+    const toggleNav = () => { // 定义切换函数
+        setIsNavExpanded(!isNavExpanded);
+    };
+
+
     useEffect(() => {
         localStorage.setItem('token', token);
     }, [token]);
@@ -58,11 +65,14 @@ function App() {
 
     return (
         <Router>
-            <nav>
-                <Link to="/"><img src="https://7trees.cn/zyImg/qks2862/Athenavi.png" alt="Logo" className="logo"/></Link>
+            <nav className={isNavExpanded ? "expanded" : "collapsed"}>
+                <Link to="/"><img src="https://7trees.cn/zyImg/qks2862/Athenavi.png" alt="Logo"
+                                  className="logo"/></Link>
                 <Link to="/discover/playlists">发现音乐</Link>
                 {token ? (
-                    <Link to="/my">我</Link>
+                    <><Link to="/my">我</Link>
+                        <Link to="/discover/singer">歌手</Link>
+                        <Link to="/search">搜索</Link></>
                 ) : (
                     <Link to="/login">登录</Link>
                 )}
@@ -70,10 +80,9 @@ function App() {
             <header>
                 <div className="secondMenu">
                     <Link to="/toplist">排行榜</Link>
-                    <Link to="/discover/singer">歌手</Link>
                     <Link to="/discover/album">专辑</Link>
                     <Link to="/song">播放</Link>
-                    <Link to="/search">搜索</Link>
+                    <button onClick={toggleNav} className="toggle-button">☰</button>
                 </div>
             </header>
             <div className='player'>
