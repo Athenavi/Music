@@ -1,7 +1,7 @@
-from database import get_database_connection
+from database import get_db_connection
 
 # 连接数据库
-mydb = get_database_connection()
+mydb = get_db_connection()
 
 mycursor = mydb.cursor()
 print("歌单歌曲批量存入")

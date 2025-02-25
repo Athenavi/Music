@@ -3,6 +3,7 @@ import logging
 import os
 import time
 import uuid
+from configparser import ConfigParser
 from contextlib import asynccontextmanager
 from datetime import timedelta
 from io import BytesIO
@@ -36,7 +37,23 @@ print(base_dir)
 
 logging.basicConfig(filename='user.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-domain = "http://127.0.0.1/"
+config = ConfigParser()
+try:
+    config.read('config.ini', encoding='utf-8')
+except UnicodeDecodeError:
+    config.read('config.ini', encoding='gbk')
+
+
+def get_general_conf():
+    sys_config = ConfigParser()
+    sys_config.read('config.ini', encoding='utf-8')
+    domain = config.get('general', 'domain', fallback='error').strip("'")
+    title = config.get('general', 'title', fallback='error').strip("'")
+
+    return domain, title
+
+
+domain, sitename = get_general_conf()
 
 
 @app.route('/api/count_users', methods=['POST'])
